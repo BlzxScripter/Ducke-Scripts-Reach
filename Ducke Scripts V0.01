@@ -1,0 +1,535 @@
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "DuckeScripts V0.01 --Only Football Games By Blzx Scripter--",
+   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   LoadingTitle = "Script Carregando...",
+   LoadingSubtitle = "By Blzx Scripter",
+   ShowText = "DuckeScripts V0.01 --Only Football Games By Blzx Scripter--", -- for mobile users to unhide rayfield, change if you'd like
+   Theme = "DarkBlue", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+
+   ToggleUIKeybind = "G", -- The keybind to toggle the UI visibility (string like "K" or Enum.KeyCode)
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil, -- Create a custom folder for your hub/game
+      FileName = "Big Hub"
+   },
+
+   Discord = {
+      Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
+      Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+   },
+
+   KeySystem = false, -- Set this to true to use our key system
+   KeySettings = {
+      Title = "Untitled",
+      Subtitle = "Key System",
+      Note = "No method of obtaining the key is provided", -- Use this to tell the user how to get a key
+      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+      Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+   }
+})
+
+local Maintab = Window:CreateTab("Maintab", 4483362458) -- Title, Image
+
+Rayfield:Notify({
+   Title = "DuckeScripts Funcionando",
+   Content = "Made By Blzx Scripter",
+   Duration = 6.5,
+   Image = 4483362458,
+})
+
+-- ⚠️ ADVERTÊNCIA CRÍTICA:
+-- Este código é apenas para fins educacionais e funcionamento em servidores privados.
+-- Em jogos online públicos, essas modificações NÃO funcionarão devido à verificação do servidor.
+
+-- Sistema de Reach para Jogadores de Campo (ATUALIZADO)
+local PlayerReachSlider = Maintab:CreateSlider({
+   Name = "👟 Alcance dos Pés (JOGADORES)",
+   Range = {5, 250},  -- Aumentado para 250
+   Increment = 5,
+   Suffix = "estudos",
+   CurrentValue = 15,
+   Flag = "FieldPlayerReach",
+   Callback = function(Reach)
+       _G.FieldPlayerReach = Reach
+       setupFieldPlayerReach(Reach)
+       
+       game:GetService("StarterGui"):SetCore("SendNotification", {
+           Title = "⚡ ALCANCE MEGA CONFIGURADO",
+           Text = "Pés: " .. Reach .. " estudos (MÁXIMO!)",
+           Duration = 5,
+           Icon = "rbxassetid://4483345998"
+       })
+   end,
+})
+
+-- Sistema de Reach para Goleiros (ATUALIZADO)
+local GoalieReachSlider = Maintab:CreateSlider({
+   Name = "🧤 Alcance das Mãos (GOLEIROS)",
+   Range = {10, 250},  -- Aumentado para 250
+   Increment = 10,
+   Suffix = "estudos",
+   CurrentValue = 30,
+   Flag = "GoalieReach",
+   Callback = function(Reach)
+       _G.GoalieReach = Reach
+       setupGoalieReach(Reach)
+       
+       game:GetService("StarterGui"):SetCore("SendNotification", {
+           Title = "🧤 ALCANCE GOLEIRO GIGANTE",
+           Text = "Mãos: " .. Reach .. " estudos (CAMPO INTEIRO!)",
+           Duration = 5,
+           Icon = "rbxassetid://4483345998"
+       })
+   end,
+})
+
+-- Botão para alcance MÁXIMO instantâneo
+local MaxReachButton = Maintab:CreateButton({
+   Name = "🔥 ATIVAR ALCANCE MÁXIMO (250)",
+   Callback = function()
+       _G.FieldPlayerReach = 250
+       _G.GoalieReach = 250
+       
+       -- Atualizar sliders
+       PlayerReachSlider:Set(250)
+       GoalieReachSlider:Set(250)
+       
+       -- Configurar ambos
+       setupFieldPlayerReach(250)
+       setupGoalieReach(250)
+       
+       game:GetService("StarterGui"):SetCore("SendNotification", {
+           Title = "🚀 ALCANCE MÁXIMO ATIVADO!",
+           Text = "250 estudos para ambos!",
+           Duration = 5,
+           Icon = "rbxassetid://4483345998"
+       })
+       
+       -- Efeito visual
+       spawnMaxReachEffect()
+   end,
+})
+
+-- Configurar sistema para jogadores de campo (ATUALIZADO)
+function setupFieldPlayerReach(reach)
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+    -- Sistema 1: Hitbox GIGANTE para alcance máximo
+    task.spawn(function()
+        wait(0.5)
+        
+        local root = character:FindFirstChild("HumanoidRootPart")
+        if not root then return end
+        
+        -- Criar hitbox invisível gigante ao redor do jogador
+        if _G.MegaHitbox then _G.MegaHitbox:Destroy() end
+        
+        _G.MegaHitbox = Instance.new("Part")
+        _G.MegaHitbox.Name = "MegaReachHitbox"
+        _G.MegaHitbox.Size = Vector3.new(reach*2, reach*2, reach*2)
+        _G.MegaHitbox.Position = root.Position
+        _G.MegaHitbox.Anchored = false
+        _G.MegaHitbox.CanCollide = false
+        _G.MegaHitbox.Transparency = 1
+        _G.MegaHitbox.Parent = character
+        
+        -- Conectar ao root part
+        local weld = Instance.new("Weld")
+        weld.Part0 = root
+        weld.Part1 = _G.MegaHitbox
+        weld.C0 = CFrame.new(0, 0, 0)
+        weld.Parent = root
+        
+        -- Sistema de detecção de bola em área ampliada
+        createDetectionSphere(character, reach, Color3.fromRGB(255, 50, 50))
+    end)
+    
+    -- Sistema 2: Hook no mouse para chutes SUPER distantes
+    local mouse = player:GetMouse()
+    if _G.MouseConnection then _G.MouseConnection:Disconnect() end
+    
+    _G.MouseConnection = mouse.Button1Down:Connect(function()
+        local ball = findBallInWorkspace()
+        local root = character:FindFirstChild("HumanoidRootPart")
+        
+        if ball and root then
+            local distance = (root.Position - ball.Position).Magnitude
+            
+            -- Se a bola estiver dentro do reach GIGANTE configurado
+            if distance <= reach then
+                -- Feedback visual melhorado
+                createSuperBeam(root.Position, ball.Position, distance)
+                
+                -- Multiplos eventos para tentar bypass
+                for i = 1, 5 do  -- Tentar 5 vezes
+                    task.wait(0.01)
+                    attemptSuperKick(ball, mouse.Hit.p, distance)
+                end
+                
+                -- Forçar movimento da bola localmente
+                applyLocalForce(ball, mouse.Hit.p)
+            end
+        end
+    end)
+    
+    -- Sistema 3: Chute automático quando bola perto (até 250 estudos)
+    if _G.AutoKickThread then _G.AutoKickThread:Disconnect() end
+    
+    _G.AutoKickThread = game:GetService("RunService").Heartbeat:Connect(function()
+        if _G.FieldPlayerReach and _G.FieldPlayerReach > 50 then  -- Só se tiver alcance alto
+            local ball = findBallInWorkspace()
+            local root = character:FindFirstChild("HumanoidRootPart")
+            
+            if ball and root and _G.FieldPlayerReach then
+                local distance = (root.Position - ball.Position).Magnitude
+                
+                -- Se bola estiver dentro do alcance E se movendo devagar
+                if distance <= _G.FieldPlayerReach and ball.Velocity.Magnitude < 20 then
+                    -- Direcionar para o gol mais próximo
+                    local goalTarget = findNearestGoal(root.Position)
+                    attemptKickEvent(ball, goalTarget)
+                    
+                    -- Efeito visual
+                    createQuickBeam(root.Position, ball.Position)
+                end
+            end
+        end
+    end)
+end
+
+-- Configurar sistema para goleiros (ATUALIZADO)
+function setupGoalieReach(reach)
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+    -- Sistema para goleiros (CAMPO INTEIRO)
+    task.spawn(function()
+        wait(0.5)
+        
+        local root = character:FindFirstChild("HumanoidRootPart")
+        if not root then return end
+        
+        -- Criar esfera de defesa GIGANTE
+        if _G.GoalieSphere then _G.GoalieSphere:Destroy() end
+        
+        _G.GoalieSphere = Instance.new("Part")
+        _G.GoalieSphere.Name = "GoalieMegaSphere"
+        _G.GoalieSphere.Shape = Enum.PartType.Ball
+        _G.GoalieSphere.Size = Vector3.new(reach*2, reach*2, reach*2)
+        _G.GoalieSphere.Position = root.Position
+        _G.GoalieSphere.Anchored = false
+        _G.GoalieSphere.CanCollide = false
+        _G.GoalieSphere.Transparency = 0.9
+        _G.GoalieSphere.BrickColor = BrickColor.new("Bright blue")
+        _G.GoalieSphere.Material = Enum.Material.Neon
+        _G.GoalieSphere.Parent = character
+        
+        local weld = Instance.new("Weld")
+        weld.Part0 = root
+        weld.Part1 = _G.GoalieSphere
+        weld.C0 = CFrame.new(0, 0, 0)
+        weld.Parent = root
+        
+        -- Sistema de defesa de CAMPO INTEIRO
+        createDetectionSphere(character, reach, Color3.fromRGB(50, 100, 255))
+    end)
+    
+    -- Sistema de defesa SUPER automática para goleiros
+    if _G.AutoDefenseThread then _G.AutoDefenseThread:Disconnect() end
+    
+    _G.AutoDefenseThread = game:GetService("RunService").Heartbeat:Connect(function()
+        if _G.IsGoalieMode and _G.GoalieReach and _G.GoalieReach > 30 then
+            local ball = findBallInWorkspace()
+            local root = character:FindFirstChild("HumanoidRootPart")
+            
+            if ball and root then
+                local distance = (root.Position - ball.Position).Magnitude
+                
+                -- Defender qualquer bola no alcance GIGANTE
+                if distance <= _G.GoalieReach then
+                    -- Teleportar bola para longe do gol
+                    local saveDirection = calculateSaveDirection(root.Position, ball.Position)
+                    local savePoint = root.Position + (saveDirection * 100)
+                    
+                    -- Multiplos eventos de defesa
+                    for i = 1, 3 do
+                        attemptSuperSave(ball, savePoint)
+                    end
+                    
+                    -- Efeito visual de defesa
+                    createDefenseRing(root.Position, math.min(distance, 100))
+                end
+            end
+        end
+    end)
+end
+
+-- NOVO: Botão para alternar modo goleiro/jogador com alcance máximo
+local ToggleButton = Maintab:CreateToggle({
+   Name = "🧤⚡ Ativar Reach",
+   CurrentValue = false,
+   Flag = "GoalieModeToggle",
+   Callback = function(Value)
+       _G.IsGoalieMode = Value
+       
+       if Value then
+           -- Ativar sistema de goleiro MEGA
+           setupGoalieReach(_G.GoalieReach or 250)
+           game:GetService("StarterGui"):SetCore("SendNotification", {
+               Title = "🧤 REACH ATIVO",
+               Text = "Alcance: " .. (_G.GoalieReach or 250) .. " estudos",
+               Duration = 4
+           })
+       else
+           -- Ativar sistema de jogador MEGA
+           setupFieldPlayerReach(_G.FieldPlayerReach or 250)
+           game:GetService("StarterGui"):SetCore("SendNotification", {
+               Title = "👟 MODO REACH JOGADOR ATIVO",
+               Text = "Alcance: " .. (_G.FieldPlayerReach or 250) .. " estudos",
+               Duration = 4
+           })
+       end
+   end,
+})
+
+-- NOVAS FUNÇÕES PARA ALCANCE MÁXIMO
+
+function spawnMaxReachEffect()
+    local player = game.Players.LocalPlayer
+    local character = player.Character
+    if not character then return end
+    
+    local root = character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    
+    -- Efeito de explosão de alcance
+    for i = 1, 20 do
+        local part = Instance.new("Part")
+        part.Size = Vector3.new(2, 2, 2)
+        part.Position = root.Position + Vector3.new(
+            math.random(-50, 50),
+            math.random(0, 20),
+            math.random(-50, 50)
+        )
+        part.Anchored = true
+        part.CanCollide = false
+        part.Transparency = 0.3
+        part.BrickColor = BrickColor.new("Neon orange")
+        part.Material = Enum.Material.Neon
+        part.Parent = workspace
+        
+        game:GetService("Debris"):AddItem(part, 1)
+    end
+end
+
+function createDetectionSphere(character, radius, color)
+    local sphere = Instance.new("Part")
+    sphere.Shape = Enum.PartType.Ball
+    sphere.Size = Vector3.new(radius*2, radius*2, radius*2)
+    sphere.Position = character:GetPivot().Position
+    sphere.Anchored = false
+    sphere.CanCollide = false
+    sphere.Transparency = 0.95
+    sphere.BrickColor = BrickColor.new(color)
+    sphere.Material = Enum.Material.Neon
+    sphere.Parent = character
+    
+    -- Manter esfera no personagem
+    local weld = Instance.new("Weld")
+    weld.Part0 = character:FindFirstChild("HumanoidRootPart") or character:WaitForChild("HumanoidRootPart")
+    weld.Part1 = sphere
+    weld.C0 = CFrame.new(0, 0, 0)
+    weld.Parent = sphere
+    
+    return sphere
+end
+
+function attemptSuperKick(ball, target, distance)
+    -- Tentar TODOS os eventos possíveis
+    local allEvents = {
+        "KickBall", "KickEvent", "FootballKick", "Kick", "Shoot",
+        "RemoteEvent", "RemoteFunction", "BallEvent", "GameEvent",
+        "Replicate", "Replication", "ServerEvent", "ClientEvent"
+    }
+    
+    for _, eventName in pairs(allEvents) do
+        pcall(function()
+            -- Tentar em diferentes locais
+            local locations = {
+                game:GetService("ReplicatedStorage"),
+                game:GetService("Workspace"),
+                game:GetService("ServerScriptService"),
+                game:GetService("StarterPlayer")
+            }
+            
+            for _, location in pairs(locations) do
+                local remote = location:FindFirstChild(eventName)
+                if remote and (remote:IsA("RemoteEvent") or remote:IsA("RemoteFunction")) then
+                    remote:FireServer(ball, target, distance)
+                end
+            end
+        end)
+    end
+end
+
+function attemptSuperSave(ball, savePoint)
+    local saveEvents = {
+        "GoalieSave", "SaveBall", "CatchBall", "Defend",
+        "BlockBall", "Intercept", "GoalieEvent", "SaveEvent"
+    }
+    
+    for _, eventName in pairs(saveEvents) do
+        pcall(function()
+            local remote = game:GetService("ReplicatedStorage"):FindFirstChild(eventName)
+            if remote then
+                remote:FireServer(ball, savePoint, _G.GoalieReach or 250)
+            end
+        end)
+    end
+end
+
+function createSuperBeam(from, to, distance)
+    -- Criar múltiplos beams para efeito visual
+    for i = 1, math.min(10, math.floor(distance/10)) do
+        task.spawn(function()
+            local beam = Instance.new("Part")
+            beam.Size = Vector3.new(0.3, 0.3, (from - to).Magnitude)
+            beam.CFrame = CFrame.new(from, to) * CFrame.new(
+                math.random(-2, 2),
+                math.random(-2, 2),
+                -beam.Size.Z/2
+            )
+            beam.Anchored = true
+            beam.CanCollide = false
+            beam.Transparency = 0.2
+            beam.BrickColor = BrickColor.new("Bright yellow")
+            beam.Material = Enum.Material.Neon
+            beam.Parent = workspace
+            
+            game:GetService("Debris"):AddItem(beam, 0.3)
+        end)
+    end
+end
+
+function createQuickBeam(from, to)
+    local beam = Instance.new("Part")
+    beam.Size = Vector3.new(0.1, 0.1, (from - to).Magnitude)
+    beam.CFrame = CFrame.new(from, to) * CFrame.new(0, 0, -beam.Size.Z/2)
+    beam.Anchored = true
+    beam.CanCollide = false
+    beam.Transparency = 0.1
+    beam.BrickColor = BrickColor.new("Lime green")
+    beam.Parent = workspace
+    
+    game:GetService("Debris"):AddItem(beam, 0.1)
+end
+
+function createDefenseRing(center, radius)
+    local ring = Instance.new("Part")
+    ring.Shape = Enum.PartType.Cylinder
+    ring.Size = Vector3.new(2, radius*2, radius*2)
+    ring.Position = center
+    ring.Anchored = true
+    ring.CanCollide = false
+    ring.Transparency = 0.7
+    ring.BrickColor = BrickColor.new("Bright blue")
+    ring.Material = Enum.Material.Neon
+    ring.Parent = workspace
+    
+    game:GetService("Debris"):AddItem(ring, 0.5)
+end
+
+function calculateSaveDirection(goaliePos, ballPos)
+    local direction = (ballPos - goaliePos).Unit
+    -- Inverter direção para afastar do gol
+    return -direction
+end
+
+function applyLocalForce(ball, direction)
+    -- Aplicar força localmente (apenas visual)
+    pcall(function()
+        local bodyVelocity = Instance.new("BodyVelocity")
+        bodyVelocity.Velocity = (direction - ball.Position).Unit * 100
+        bodyVelocity.MaxForce = Vector3.new(10000, 10000, 10000)
+        bodyVelocity.Parent = ball
+        
+        game:GetService("Debris"):AddItem(bodyVelocity, 0.1)
+    end)
+end
+
+function findNearestGoal(playerPos)
+    -- Encontrar gols no campo
+    local goals = {}
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj.Name:lower():find("goal") or obj.Name:lower():find("gol") then
+            table.insert(goals, obj)
+        end
+    end
+    
+    if #goals > 0 then
+        -- Retornar posição do gol mais próximo
+        local nearestGoal = goals[1]
+        local nearestDist = (playerPos - nearestGoal.Position).Magnitude
+        
+        for i = 2, #goals do
+            local dist = (playerPos - goals[i].Position).Magnitude
+            if dist < nearestDist then
+                nearestGoal = goals[i]
+                nearestDist = dist
+            end
+        end
+        
+        return nearestGoal.Position
+    end
+    
+    -- Se não encontrar gol, chutar para frente
+    return playerPos + Vector3.new(0, 0, 200)
+end
+
+-- Funções originais mantidas (com pequenas melhorias)
+function findBallInWorkspace()
+    local ballNames = {"SoccerBall", "Ball", "Football", "bola", "Bola", "Ball_Server", "ball", "BallInstance"}
+    for _, name in pairs(ballNames) do
+        local ball = workspace:FindFirstChild(name)
+        if ball then 
+            -- Procurar também em subpastas
+            return ball 
+        end
+    end
+    
+    -- Procurar em todos os descendentes
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and (obj.Name:lower():find("ball") or obj.Name:lower():find("bola")) then
+            return obj
+        end
+    end
+    
+    return nil
+end
+
+-- Inicializar com alcance máximo se configurado
+task.spawn(function()
+    wait(3) -- Esperar carregamento
+    
+    if _G.FieldPlayerReach and _G.FieldPlayerReach >= 250 then
+        setupFieldPlayerReach(250)
+    end
+    
+    if _G.GoalieReach and _G.GoalieReach >= 250 then
+        setupGoalieReach(250)
+    end
+end)
+
+print("⚡ SISTEMA DE ALCANCE MÁXIMO (250) CARREGADO!")
+print("👟 Jogador: Até 250 estudos de alcance")
+print("🧤 Goleiro: Até 250 estudos de alcance")
